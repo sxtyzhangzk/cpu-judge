@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	size_t memSize = 0x01000000;
+	size_t memSize = 0x10000000;
 	if (vm.count("memory-size"))
 		memSize = vm["memory-size"].as<int>();
 	Environment env(vm["com-port"].as<std::string>(), memSize, vm.count("verbose"));
