@@ -3,7 +3,7 @@
 
 #include "env_iface.h"
 
-enum Funct3;
+enum Funct3 : std::uint32_t;
 
 class Simulator
 {

@@ -15,7 +15,7 @@ enum Opcode
 	FENCE	= 0b0001111
 };
 
-enum Funct3
+enum Funct3 : std::uint32_t
 {
 	EQ		= 0b000,
 	NE		= 0b001,
