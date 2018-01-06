@@ -18,21 +18,18 @@
 	- Sources:
 		- https://github.com/riscv/riscv-gnu-toolchain
 	- Binary files on Ubuntu 16.04
-<<<<<<< HEAD
-		- https://jbox.sjtu.edu.cn/l/Y0TMBG
+	- ~~https://jbox.sjtu.edu.cn/l/Y0TMBG~~
+	- https://jbox.sjtu.edu.cn/l/muHvz8 (library compiled with rv32i and ilp32)
 
 ## How to use these files
 
 Look at here :
 
-* [*How to Compile c-code*]()
-* [*How to Compile cpp-code about Uart on Ubuntu*]()
+* [*How to Compile c-code*](https://github.com/TimerChen/CPU_RISC-V/blob/master/compile_c.md)
+* [*How to Compile cpp-code about Uart on Ubuntu*](https://github.com/TimerChen/CPU_RISC-V/blob/master/uart_compile.md)
 
 
+**Notice:This is a guide for old version, but you still can use these to test your code.**
 
 ------------
 *This document was modified by [Jingxiao Chen](https://github.com/TimerChen).*
-=======
-		- ~~https://jbox.sjtu.edu.cn/l/Y0TMBG~~
-		- https://jbox.sjtu.edu.cn/l/muHvz8 (library compiled with rv32i and ilp32)
->>>>>>> 7b474837d10c5383f91e2a1cca531a42b53c96e2
