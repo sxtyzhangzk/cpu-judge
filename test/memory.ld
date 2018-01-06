@@ -30,5 +30,5 @@ SECTIONS
 	}
 	
 	__bss_end = .;
-	__heap_start = (__bss_end + 0xfff - 1) & 0xfffff000;
+	__heap_start = (__bss_end + 0xfff) & 0xfffff000;
 }
