@@ -1,5 +1,9 @@
 #include "environment.h"
+#include "simulator.h"
 #include <fstream>
+#include <boost/format.hpp>
+
+using boost::format;
 
 Environment::Environment(const std::string &port, size_t memSize, bool verbose) 
 	: memory(memSize), is_running(false), is_timing(false), verbose(verbose)
@@ -11,7 +15,7 @@ Environment::Environment(const std::string &port, size_t memSize, bool verbose)
 	serPort.setStopbits(adapter.getStopBits());
 }
 
-int Environment::Run(const std::string &memFilePath, std::istream &in, std::ostream &out, double &time)
+int Environment::Run(const std::string &memFilePath, std::istream &in, std::ostream &out, double &time, bool simulate)
 {
 	std::ifstream fin(memFilePath, std::ios::binary | std::ios::in);
 	if (!fin.is_open())
@@ -41,51 +45,78 @@ int Environment::Run(const std::string &memFilePath, std::istream &in, std::ostr
 
 	logInfo("Memory initialized. Loaded ", pos, " bytes.");
 
-	try
-	{
-		serPort.open();
-	}
-	catch (std::exception &e)
-	{
-		logError("An Exception occurred when opening serial port.");
-		logError(e.what());
-		return -3;
-	}
-
 	ioIn = &in;
 	ioOut = &out;
 
-	adapter.setEnvironment(this);
-
-	is_running = true;
-	is_timing = false;
-
-	try
+	if (!simulate)
 	{
-		while (is_running)
+		try
 		{
-			std::uint8_t data;
-			serPort.read(&data, 1);
-			adapter.onRecv(data);
+			serPort.open();
 		}
-	}
-	catch (std::exception &e)
-	{
-		logError("An exception occurred when running.");
-		logError(e.what());
-		return -4;
-	}
+		catch (std::exception &e)
+		{
+			logError("An Exception occurred when opening serial port.");
+			logError(e.what());
+			return -3;
+		}
 
-	is_timing = false;
+		adapter.setEnvironment(this);
+
+		is_running = true;
+		is_timing = false;
+
+		try
+		{
+			while (is_running)
+			{
+				std::uint8_t data;
+				serPort.read(&data, 1);
+				adapter.onRecv(data);
+			}
+		}
+		catch (std::exception &e)
+		{
+			logError("An exception occurred when running.");
+			logError(e.what());
+			return -4;
+		}
+
+		is_timing = false;
+
+	}
+	else
+	{
+		Simulator sim;
+		sim.setEnvironment(this);
+
+		is_running = true;
+		is_timing = false;
+
+		try
+		{
+			while (is_running)
+				sim.RunInsn();
+		}
+		catch (std::exception &e)
+		{
+			logError("An exception occurred when running.");
+			logError(e.what());
+			return -4;
+		}
+
+		is_timing = false;
+	}
 
 	std::chrono::duration<double> duration = std::chrono::duration_cast<std::chrono::duration<double>>(
 		std::chrono::high_resolution_clock::now() - startTime);
 
 	time = duration.count();
 
-	serPort.close();
+	if(!simulate)
+		serPort.close();
 
-	logInfo("Finished. Running for ", time, " secs");
+	logInfo(std::string(simulate ? "Simulation " : "") + "Finished. Running for ", time, " secs");
 
 	return 0;
 }
@@ -116,15 +147,15 @@ data_t Environment::ReadMemory(addr_t addr)
 		}
 		else
 		{
-			char data;
-			ioIn->read(&data, 1);
-			data = std::uint8_t(data);
+			char rbuf;
+			ioIn->read(&rbuf, 1);
+			data = std::uint8_t(rbuf);
 		}
 	}
 	else if (addr == addrOutput)
 		logWarn("Trying to read the output port");
 
-	logDebug("Read Memory ", addr, ": ", data);
+	logDebug(format("Read Memory\t0x%08x: %08x") % addr % data);
 
 	return data;
 }
@@ -136,7 +167,7 @@ void Environment::WriteMemory(addr_t addr, data_t data, int mask)
 	if (addr >= memory.size())
 		throw AddressOutofRangeException(addr, true);
 
-	logDebug("Write Memory ", addr, ": ", data, ", mask=", mask);
+	logDebug(format("Write Memory\t0x%08x: %08x, mask=%x") % addr % data % mask);
 
 	if (addr == addrInput)
 	{
@@ -147,8 +178,8 @@ void Environment::WriteMemory(addr_t addr, data_t data, int mask)
 	{
 		if (mask & 0x1)
 		{
-			char data = char(data & 0xff);
-			ioOut->write(&data, 1);
+			char wbuf = char(data & 0xff);
+			ioOut->write(&wbuf, 1);
 		}
 		else
 			logWarn("Trying to write output port but the mask doesn't include the lowest bit");
