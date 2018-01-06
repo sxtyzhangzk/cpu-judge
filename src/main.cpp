@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	bool sim = false;
+
 	if (vm.count("help"))
 	{
 		std::cout << options;
@@ -37,7 +39,8 @@ int main(int argc, char *argv[])
 	if (!vm.count("com-port"))
 	{
 		std::cerr << "COM Port not specified" << std::endl;
-		return -1;
+		std::cerr << "Use simulation mode" << std::endl;
+		sim = true;
 	}
 	if (!vm.count("memory"))
 	{
@@ -48,7 +51,7 @@ int main(int argc, char *argv[])
 	size_t memSize = 0x10000000;
 	if (vm.count("memory-size"))
 		memSize = vm["memory-size"].as<int>();
-	Environment env(vm["com-port"].as<std::string>(), memSize, vm.count("verbose"));
+	Environment env(sim ? "" : vm["com-port"].as<std::string>(), memSize, vm.count("verbose"));
 
 	std::stringstream ss1, ss2;
 	std::ifstream fioIn;
@@ -73,7 +76,7 @@ int main(int argc, char *argv[])
 		ioOut = &ss2;
 
 	double runTime = 0.;
-	int ret = env.Run(vm["memory"].as<std::string>(), *ioIn, *ioOut, runTime);
+	int ret = env.Run(vm["memory"].as<std::string>(), *ioIn, *ioOut, runTime, sim);
 
 	if (vm.count("time-file"))
 	{
