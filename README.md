@@ -18,4 +18,5 @@
 	- Sources:
 		- https://github.com/riscv/riscv-gnu-toolchain
 	- Binary files on Ubuntu 16.04
-		- https://jbox.sjtu.edu.cn/l/Y0TMBG
+		- ~~https://jbox.sjtu.edu.cn/l/Y0TMBG~~
+		- https://jbox.sjtu.edu.cn/l/muHvz8 (library compiled with rv32i and ilp32)
